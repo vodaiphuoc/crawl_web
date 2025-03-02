@@ -45,6 +45,7 @@ if __name__ == '__main__':
             key = data_dict['key']
         )
         if out_dict is not None:
+            print(data_dict['link'], 'oke')
             stage3_data.append(out_dict)
         
         time.sleep(3)
