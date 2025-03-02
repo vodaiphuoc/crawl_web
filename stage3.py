@@ -38,17 +38,23 @@ if __name__ == '__main__':
     with open('stage_2_data/links.json','r') as fp:
         stage2_data = json.load(fp)
     
-    stage3_data = []
-    for data_dict in stage2_data:
-        out_dict = url_extract(
-            url = data_dict['link'], 
-            key = data_dict['key']
-        )
-        if out_dict is not None:
-            print(data_dict['link'], 'oke')
-            stage3_data.append(out_dict)
-        
-        time.sleep(3)
+    step = 400
+    for i in range(0, len(stage2_data),step):
+        ids = range(i, i + step) \
+            if i + step < len(stage2_data) \
+            else range(i, len(stage2_data)) 
 
-    with open('stage_3_data/page_data.json','w') as fp:
-        json.dump(stage3_data, fp, indent= 4)
+        stage3_data = []
+        for ith in ids:
+            out_dict = url_extract(
+                url = stage2_data[ith]['link'], 
+                key = stage2_data[ith]['key']
+            )
+
+            if out_dict is not None:
+                stage3_data.append(out_dict)
+            
+            time.sleep(3)        
+
+        with open(f'stage_3_data/page_data_{i}.json','w') as fp:
+            json.dump(stage3_data, fp, indent= 4)
