@@ -38,7 +38,7 @@ if __name__ == '__main__':
     with open('stage_2_data/links.json','r') as fp:
         stage2_data = json.load(fp)
     
-    step = 400
+    step = 1000
     for i in range(0, len(stage2_data),step):
         ids = range(i, i + step) \
             if i + step < len(stage2_data) \
@@ -54,7 +54,7 @@ if __name__ == '__main__':
             if out_dict is not None:
                 stage3_data.append(out_dict)
             
-            time.sleep(3)        
+            time.sleep(1.5)  
 
         with open(f'stage_3_data/page_data_{i}.json','w') as fp:
             json.dump(stage3_data, fp, indent= 4)
