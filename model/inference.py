@@ -84,7 +84,7 @@ Bây giờ, hãy đưa ra output cho đoạn văn bản dưới đây
                     "role": "user",
                     "content": [{
                         "type": "text", 
-                        "text": self.pre_built_template(statement)
+                        "text": self.pre_built_template(statement = statement)
                         },]
                 },
             ]
