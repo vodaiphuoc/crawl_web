@@ -2,7 +2,7 @@ import json
 import glob
 from model.inference import Inference
 
-model = Inference()
+model = Inference(model_id_list = "google/gemma-3-1b-it")
 BATCH_SIZE = 3
 
 
