@@ -44,7 +44,7 @@ Bây giờ, hãy đưa ra output cho đoạn văn bản dưới đây
             model_id_list: Literal["google/gemma-2-2b-it", "google/gemma-3-1b-it"],
             use_8_bits = False
         )->None:
-        model_id = model_id_list[1]
+        model_id = model_id_list
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
         quantization_config = BitsAndBytesConfig(load_in_8bit=True) if use_8_bits else None
         
