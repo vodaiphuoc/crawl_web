@@ -43,11 +43,11 @@ Bây giờ, hãy đưa ra output cho đoạn văn bản dưới đây
     def __init__(self, 
             model_id_list: Literal["google/gemma-2-2b-it", "google/gemma-3-1b-it"],
             tokenizer_max_length:int = 4000,
-            use_8_bits:bool = False
+            use_8_bits:bool = True
         )->None:
         model_id = model_id_list
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
-        quantization_config = BitsAndBytesConfig(load_in_8bit=True) if use_8_bits else None
+        quantization_config = BitsAndBytesConfig(load_in_4bit=True) if use_8_bits else None
         
         self.model = Gemma3ForCausalLM.from_pretrained(
             model_id,
