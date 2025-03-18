@@ -3,6 +3,7 @@ import glob
 from model.inference import Inference
 from bs4 import BeautifulSoup
 import argparse
+from typing import Literal, List
 
 def pre_processing_page_data(page_data:str)->str:
     soup = BeautifulSoup(page_data, 'html.parser')
