@@ -60,7 +60,7 @@ Bây giờ, hãy đưa ra output cho đoạn văn bản dưới đây
             max_new_tokens = 8000,
             do_sample= True,
             temperature = 0.5,
-            num_beams = 5,
+            num_beams = 3,
             use_cache = True,
             cache_implementation = "hybrid"
         )
@@ -99,7 +99,7 @@ Bây giờ, hãy đưa ra output cho đoạn văn bản dưới đây
             padding = True,
             padding_side = "left",
             truncation = True,
-            max_length = 120000,
+            max_length = 50000,
             return_dict=True,
             return_tensors="pt",
         ).to(self.model.device)
