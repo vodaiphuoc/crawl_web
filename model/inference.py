@@ -99,7 +99,7 @@ Bây giờ, hãy đưa ra output cho đoạn văn bản dưới đây
             padding = True,
             padding_side = "left",
             truncation = True,
-            max_length = 50000,
+            max_length = 5000,
             return_dict=True,
             return_tensors="pt",
         ).to(self.model.device)
