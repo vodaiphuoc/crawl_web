@@ -22,9 +22,17 @@ def pre_processing_page_data(page_data:str)->str:
     return main_corpus
 
 
-def main(batch_size:int, max_length:int):
-
-    model = Inference(model_id_list = "google/gemma-3-1b-it", tokenizer_max_length = max_length)
+def main(
+    batch_size:int, 
+    max_length:int, 
+    quantization: Literal["8_bits", "4bits", "None"]
+    )->None:
+    
+    model = Inference(
+        model_id_list = "google/gemma-3-1b-it", 
+        tokenizer_max_length = max_length,
+        quantization = quantization
+    )
 
 
     total_data = []
@@ -75,6 +83,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--batch_size", type = int)
     parser.add_argument("--max_length", type = int)
+    parser.add_argument("--quantization", type = str)
     
     args = vars(parser.parse_args())
 

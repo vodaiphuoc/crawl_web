@@ -43,11 +43,20 @@ Bây giờ, hãy đưa ra output cho đoạn văn bản dưới đây
     def __init__(self, 
             model_id_list: Literal["google/gemma-2-2b-it", "google/gemma-3-1b-it"],
             tokenizer_max_length:int = 4000,
-            use_8_bits:bool = True
+            quantization: Literal["8_bits", "4bits", "None"]
         )->None:
         model_id = model_id_list
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
-        quantization_config = BitsAndBytesConfig(load_in_4bit=True) if use_8_bits else None
+
+        if quantization == "8_bits":
+            quantization_config = BitsAndBytesConfig(load_in_8bit=True)
+        elif quantization == "4_bits":
+            quantization_config = BitsAndBytesConfig(
+                load_in_4bit = True, 
+                bnb_4bit_compute_dtype = torch.bfloat16
+            )
+        else:
+            quantization_config = None
         
         self.model = Gemma3ForCausalLM.from_pretrained(
             model_id,
