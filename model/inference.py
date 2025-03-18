@@ -42,8 +42,8 @@ Bây giờ, hãy đưa ra output cho đoạn văn bản dưới đây
 
     def __init__(self, 
             model_id_list: Literal["google/gemma-2-2b-it", "google/gemma-3-1b-it"],
+            quantization: Literal["8_bits", "4_bits", "None"],
             tokenizer_max_length:int = 4000,
-            quantization: Literal["8_bits", "4_bits", "None"]
         )->None:
         model_id = model_id_list
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
