@@ -52,7 +52,7 @@ Bây giờ, hãy đưa ra output cho đoạn văn bản dưới đây
         self.model = Gemma3ForCausalLM.from_pretrained(
             model_id,
             device_map = "auto",
-            torch_dtype = "auto",
+            torch_dtype = "auto" if use_8_bits else torch.float16,
             attn_implementation = "sdpa",
             quantization_config = quantization_config
         ).eval()
