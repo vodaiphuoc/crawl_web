@@ -50,18 +50,20 @@ Bây giờ, hãy đưa ra output cho đoạn văn bản dưới đây
 
         if quantization == "8_bits":
             quantization_config = BitsAndBytesConfig(load_in_8bit=True)
+
         elif quantization == "4_bits":
             quantization_config = BitsAndBytesConfig(
                 load_in_4bit = True, 
                 bnb_4bit_compute_dtype = torch.bfloat16
             )
+
         else:
             quantization_config = None
         
         self.model = Gemma3ForCausalLM.from_pretrained(
             model_id,
             device_map = "auto",
-            torch_dtype = "auto" if use_8_bits else torch.float16,
+            torch_dtype = "auto",
             attn_implementation = "sdpa",
             quantization_config = quantization_config
         ).eval()
