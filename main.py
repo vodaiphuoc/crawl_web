@@ -37,10 +37,13 @@ for json_file in glob.glob('stage_3_data/*.json'):
             if ith + BATCH_SIZE < len(stage3_data)  \
             else stage3_data[ith: ith : ]
 
-        batch_page = [
-            pre_processing_page_data(page['page_data']) 
-            for page in batch_pages_data
-        ]
+
+        batch_page = []
+        for page in batch_pages_data:
+            try:
+                batch_page.append(pre_processing_page_data(page['page_data']))
+            except IndexError as err:
+                continue
 
         batch_reponses = model.forward(batch_page)
 
