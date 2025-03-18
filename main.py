@@ -22,7 +22,7 @@ def pre_processing_page_data(page_data:str)->str:
 
 
 model = Inference(model_id_list = "google/gemma-3-1b-it")
-BATCH_SIZE = 4
+BATCH_SIZE = 3
 
 
 total_data = []
