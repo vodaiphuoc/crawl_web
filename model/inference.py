@@ -42,7 +42,8 @@ Bây giờ, hãy đưa ra output cho đoạn văn bản dưới đây
 
     def __init__(self, 
             model_id_list: Literal["google/gemma-2-2b-it", "google/gemma-3-1b-it"],
-            use_8_bits = False
+            tokenizer_max_length:int = 4000,
+            use_8_bits:bool = False
         )->None:
         model_id = model_id_list
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
@@ -73,6 +74,8 @@ Bây giờ, hãy đưa ra output cho đoạn văn bản dưới đây
             response_schema = self.reponse_schema
         )
 
+        self.tokenizer_max_length = tokenizer_max_length
+
     def forward(self, corpus:List[str])->List[str]:
         batch_msgs = [
             [
@@ -99,7 +102,7 @@ Bây giờ, hãy đưa ra output cho đoạn văn bản dưới đây
             padding = True,
             padding_side = "left",
             truncation = True,
-            max_length = 5000,
+            max_length = self.tokenizer_max_length,
             return_dict=True,
             return_tensors="pt",
         ).to(self.model.device)
