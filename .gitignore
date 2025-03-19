@@ -2,3 +2,4 @@ myenv/
 docs/
 *test.py
 *.zip
+__pycache__/
