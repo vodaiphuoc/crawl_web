@@ -5,6 +5,7 @@ import argparse
 from typing import Literal, List, Dict, Union
 from datetime import datetime
 import re
+from tqdm import tqdm
 
 class NonmatchException(Exception):
     def __init__(self, message:str):
@@ -58,7 +59,7 @@ def main()->None:
         with open(json_file,'r') as fp:
             stage3_data = json.load(fp)
 
-            for page in stage3_data:
+            for page in tqdm(stage3_data, total = len(stage3_data)):
                 try:
                     total_data.append(pre_processing_page_data(
                         page_data = page['page_data'],
