@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import argparse
 from typing import Literal, List, Dict, Union
 from datetime import datetime
+import re
 
 class NonmatchException(Exception):
     def __init__(self, message:str):
