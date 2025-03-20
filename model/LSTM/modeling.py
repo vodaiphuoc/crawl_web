@@ -135,7 +135,13 @@ class MergeDataset(Dataset):
     def __getitem__(self, index:int):
         row = self.df.loc[index: index + self.sequence_length - 1,:]
 
-        price_vector = torch.from_numpy(np.concatenate([row.high, row.low, row.open, row.close], axis=-1))
+        price_vector = torch.from_numpy(
+            np.concatenate([row.high.to_numpy().reshape(-1,1), 
+                            row.low.to_numpy().reshape(-1,1), 
+                            row.open.to_numpy().reshape(-1,1), 
+                            row.close.to_numpy().reshape(-1,1)
+                            ], axis=-1
+        ))
 
         corpus = row.merge_corpus
 
@@ -156,9 +162,9 @@ class MergeDataset(Dataset):
         elif len(null_ids) == 0:
             event_embedding = self.sentence_model.encode(
                 corpus.tolist(), 
-                show_progress_bar= False, 
-                precision= 'float32', 
-                convert_to_tensor=True
+                show_progress_bar = False, 
+                precision = 'float32', 
+                convert_to_tensor = True
             ).cpu().numpy()
 
             return price_vector, event_embedding
@@ -174,7 +180,7 @@ class MergeDataset(Dataset):
                 convert_to_tensor=True
             ).cpu().numpy()
         
-            total_embeddings[null_ids] = null_event_embedding
-            total_embeddings[non_null_ids] = non_null_event_embedding
+            total_embeddings[null_ids,:] = null_event_embedding
+            total_embeddings[non_null_ids,:] = non_null_event_embedding
 
             return price_vector, torch.from_numpy(total_embeddings)
