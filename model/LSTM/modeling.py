@@ -135,6 +135,10 @@ class MergeDataset(Dataset):
     def __getitem__(self, index:int):
         row = self.df.loc[index: index + self.sequence_length - 1,:]
 
+        target_price = torch.from_numpy(
+            self.df.loc[index + self.sequence_length,:].close.to_numpy()
+        )
+
         price_vector = torch.from_numpy(
             np.concatenate([row.high.to_numpy().reshape(-1,1), 
                             row.low.to_numpy().reshape(-1,1), 
@@ -151,11 +155,13 @@ class MergeDataset(Dataset):
         non_null_ids = corpus[check_null_df==False].index.tolist()
 
         if len(null_ids) == self.sequence_length: 
-            return (price_vector, 
-                    torch.zeros(
-                        size = (self.sequence_length,self.embedding_dim), 
-                        dtype= self._output_dtype
-                    )
+            return (
+                price_vector, 
+                torch.zeros(
+                    size = (self.sequence_length,self.embedding_dim), 
+                    dtype= self._output_dtype
+                ),
+                target_price
             )
         
         elif len(null_ids) == 0:
@@ -166,7 +172,7 @@ class MergeDataset(Dataset):
                 convert_to_tensor = True
             ).cpu().numpy()
 
-            return price_vector, event_embedding
+            return price_vector, event_embedding, target_price
 
         else:
             total_embeddings = np.zeros(
@@ -181,15 +187,6 @@ class MergeDataset(Dataset):
                 convert_to_tensor = True
             ).cpu().numpy()
 
-            try:
-                total_embeddings[non_null_ids,:] = non_null_event_embedding
-            except IndexError as err:
-                print(err)
-                print('check length')
-                print(total_embeddings.shape[0],len(null_ids), non_null_event_embedding.shape)
-                print(len(corpus))
-
-                print('index: ', index, ', total data length: ',len(self.df))
-
-            finally:
-                return price_vector, torch.from_numpy(total_embeddings)
+            total_embeddings[non_null_ids,:] = non_null_event_embedding
+            
+            return price_vector, torch.from_numpy(total_embeddings), target_price
