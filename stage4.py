@@ -138,11 +138,11 @@ class PostProcessing(object):
 def main()->None:
     for json_file in glob.glob('stage_3_data/*.json'):
         file_name = json_file.split(os.sep)[-1].replace('.json','')
-
+    
         total_data = []
         with open(json_file,'r') as fp:
             stage3_data = json.load(fp)
-
+            
             for page in tqdm(stage3_data, total = len(stage3_data)):
                 try:
                     total_data.append(pre_processing_page_data(
@@ -150,7 +150,6 @@ def main()->None:
                         url = page['url']
                     ))
                 except (IndexError, NonmatchException) as err:
-                    print(err)
                     continue
         
         with open(f'stage_4_data/{file_name}.json','w') as fp:

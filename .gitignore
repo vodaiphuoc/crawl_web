@@ -4,3 +4,4 @@ docs/
 *.zip
 __pycache__/
 *.pkl
+*.json
