@@ -1,4 +1,6 @@
 from dataclasses import dataclass, field
+import os
+
 
 
 @dataclass
@@ -10,7 +12,10 @@ class ModelConfig:
 
 @dataclass
 class TrainingConfig:
-    csv_path:str = field(default= "stage_4_data\\total.csv")
+    csv_path:str = field(default = __file__.replace(
+            os.path.join("model","LSTM","config.py"), 
+            os.path.join("stage_4_data","total.csv")
+    ))
     sequence_length: int = field(default= 20, metadata= "sequence length of input data")
     model: ModelConfig = field(default= ModelConfig(sequence_length= sequence_length), metadata= "Model config params")
 
