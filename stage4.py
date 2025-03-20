@@ -96,8 +96,6 @@ class PostProcessing(object):
 
         stock_values['time'] = pd.to_datetime(stock_values['time'], format="%Y-%m-%d")
         stock_values['time_diff'] = stock_values['time'].diff()
-        
-        stock_values.to_csv('temp.csv')
 
         return stock_values
 
@@ -119,7 +117,7 @@ class PostProcessing(object):
             }
         except IndexError as err:
             return {
-                'corpus_list': []
+                'merge_corpus': ""
             }
 
     def align(self):
@@ -136,24 +134,24 @@ class PostProcessing(object):
 
 
 def main()->None:
-    for json_file in glob.glob('stage_3_data/*.json'):
-        file_name = json_file.split(os.sep)[-1].replace('.json','')
+    # for json_file in glob.glob('stage_3_data/*.json'):
+    #     file_name = json_file.split(os.sep)[-1].replace('.json','')
     
-        total_data = []
-        with open(json_file,'r') as fp:
-            stage3_data = json.load(fp)
+    #     total_data = []
+    #     with open(json_file,'r') as fp:
+    #         stage3_data = json.load(fp)
             
-            for page in tqdm(stage3_data, total = len(stage3_data)):
-                try:
-                    total_data.append(pre_processing_page_data(
-                        page_data = page['page_data'],
-                        url = page['url']
-                    ))
-                except (IndexError, NonmatchException) as err:
-                    continue
+    #         for page in tqdm(stage3_data, total = len(stage3_data)):
+    #             try:
+    #                 total_data.append(pre_processing_page_data(
+    #                     page_data = page['page_data'],
+    #                     url = page['url']
+    #                 ))
+    #             except (IndexError, NonmatchException) as err:
+    #                 continue
         
-        with open(f'stage_4_data/{file_name}.json','w') as fp:
-                json.dump(total_data, fp, indent= 4)
+    #     with open(f'stage_4_data/{file_name}.json','w') as fp:
+    #             json.dump(total_data, fp, indent= 4)
 
 
     # post processing
@@ -162,7 +160,7 @@ def main()->None:
 
     print('result data length: ', len(result_data))
 
-    result_data.to_csv('total.csv')
+    result_data.to_csv('stage_4_data/total.csv')
 
 
 if __name__ == '__main__':

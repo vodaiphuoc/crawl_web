@@ -4,6 +4,7 @@ from torch.utils.data import Dataset
 from typing import Union, Tuple
 from sentence_transformers import SentenceTransformer
 import pandas as pd
+import numpy as np
 
 class LSTMCellEventContext(nn.Module):
     r"""
@@ -116,9 +117,40 @@ class MergeDataset(Dataset):
     
         # convert merge corpus to embedding vetors
         self.sentence_model = SentenceTransformer(
-            'dangvantuan/vietnamese-document-embedding', 
+            'dangvantuan/vietnamese-document-embedding',
+            cache_folder= ".checkpoint",
             trust_remote_code=True
         )
+
+        self.embedding_dim = self.sentence_model.get_sentence_embedding_dimension()
+
         self.sentence_model.compile(fullgraph = True)
 
+    def __len__(self):
+        return len(self.df) - (self.sequence_length+1)
     
+    def __getitem__(self, index:int):
+        row = self.df.loc[index: index + self.sequence_length,:]
+
+        price_vector = torch.from_numpy(np.concatenate([row.high, row.low, row.open, row.close], axis=-1))
+
+        corpus = row.merge_corpus
+
+        check_null_df = corpus.isnull()
+
+        null_ids = corpus[check_null_df==True].index.tolist()
+        null_event_embedding = np.zeros(shape = (len(null_ids),self.embedding_dim))
+        
+        non_null_ids = corpus[check_null_df==False].index.tolist()
+        non_null_event_embedding = self.sentence_model.encode(
+                corpus.loc[non_null_ids].tolist(), 
+                show_progress_bar= False, 
+                precision= 'float32', 
+                convert_to_tensor=True
+        )
+        
+        total_embeddings = np.empty(shape= (self.sequence_length, self.embedding_dim), dtype= np.float32)
+        total_embeddings[null_ids] = null_event_embedding
+        total_embeddings[non_null_ids] = non_null_event_embedding
+        
+        return price_vector, total_embeddings

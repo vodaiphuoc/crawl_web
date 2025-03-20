@@ -1,7 +1,8 @@
 myenv/
 docs/
-*test.py
+*test*.py
 *.zip
 __pycache__/
 *.pkl
 *.json
+.checkpoint/
