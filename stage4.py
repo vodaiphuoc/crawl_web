@@ -11,6 +11,7 @@ from vnstock3 import Vnstock
 import os
 import pandas as pd
 from sentence_transformers import SentenceTransformer
+import numpy as np
 
 class NonmatchException(Exception):
     def __init__(self, message:str):
@@ -136,8 +137,31 @@ class PostProcessing(object):
             result_type = "expand"
         )
         
-        embeddings = self.sentence_model.encode(self.stock_values['merge_corpus'].tolist())
-        self.stock_values['embeddings'] = embeddings
+        
+        corpus_list = self.stock_values['merge_corpus'].tolist()
+        batch_size = len(corpus_list)//3
+        
+        total_embeddings = []
+        for _ith in range(0, len(corpus_list), batch_size):
+            if _ith + batch_size > len(corpus_list):
+                start_ids = _ith
+                end_ids = len(corpus_list)
+            else:
+                start_ids = _ith
+                end_ids = _ith+batch_size
+            
+            batch_data = corpus_list[start_ids: end_ids]
+            embeddings = self.sentence_model.encode(batch_data)
+            total_embeddings.append(embeddings)
+        
+
+        total_embeddings = np.concatenate(total_embeddings, axis= 0)
+
+        _final_embeddings_length = total_embeddings.shape[0]
+
+        assert _final_embeddings_length == len(corpus_list), f"Found {_final_embeddings_length} vs {len(corpus_list)}"
+
+        self.stock_values['embeddings'] = total_embeddings
 
         return self.stock_values
 
