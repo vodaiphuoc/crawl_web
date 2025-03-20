@@ -1,8 +1,9 @@
 import torch
 import torch.nn as nn
-
+from torch.utils.data import Dataset
 from typing import Union, Tuple
-
+from sentence_transformers import SentenceTransformer
+import pandas as pd
 
 class LSTMCellEventContext(nn.Module):
     r"""
@@ -103,4 +104,21 @@ class LSTMModel(nn.Module):
 
 
 
+class MergeDataset(Dataset):
+    def __init__(self, 
+                 sequence_length:int, 
+                 datadf: pd.DataFrame
+        )->None:
+        super().__init__()
+        self.sequence_length = sequence_length
+        
+        self.df = datadf
+    
+        # convert merge corpus to embedding vetors
+        self.sentence_model = SentenceTransformer(
+            'dangvantuan/vietnamese-document-embedding', 
+            trust_remote_code=True
+        )
+        self.sentence_model.compile(fullgraph = True)
 
+    
