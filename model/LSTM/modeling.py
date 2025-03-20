@@ -151,6 +151,6 @@ class MergeDataset(Dataset):
         
         total_embeddings = np.empty(shape= (self.sequence_length, self.embedding_dim), dtype= np.float32)
         total_embeddings[null_ids] = null_event_embedding
-        total_embeddings[non_null_ids] = non_null_event_embedding
+        total_embeddings[non_null_ids] = non_null_event_embedding.cpu().numpy()
         
         return price_vector, total_embeddings
