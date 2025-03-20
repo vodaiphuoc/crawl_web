@@ -175,4 +175,4 @@ class MergeDataset(Dataset):
             total_embeddings[null_ids] = null_event_embedding
             total_embeddings[non_null_ids] = non_null_event_embedding
 
-            return price_vector, total_embeddings
+            return price_vector, torch.from_numpy(total_embeddings)
