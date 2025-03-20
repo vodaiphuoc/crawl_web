@@ -3,3 +3,4 @@ docs/
 *test.py
 *.zip
 __pycache__/
+*.pkl
