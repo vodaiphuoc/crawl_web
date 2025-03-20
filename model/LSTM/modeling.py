@@ -136,7 +136,7 @@ class MergeDataset(Dataset):
         row = self.df.loc[index: index + self.sequence_length - 1,:]
 
         target_price = torch.from_numpy(
-            self.df.loc[index + self.sequence_length,:].close.to_numpy()
+            self.df.loc[index + self.sequence_length,:].close
         )
 
         price_vector = torch.from_numpy(
