@@ -187,8 +187,10 @@ class MergeDataset(Dataset):
             except IndexError as err:
                 print(err)
                 print('check length')
-                print(total_embeddings.shape[0],len(null_ids))
+                print(total_embeddings.shape[0],len(null_ids), non_null_event_embedding.shape)
                 print(len(corpus))
+
+                print('index: ', index, ', total data length: ',len(self.df))
 
             finally:
                 return price_vector, torch.from_numpy(total_embeddings)
