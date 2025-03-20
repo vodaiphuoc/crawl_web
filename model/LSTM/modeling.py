@@ -143,6 +143,9 @@ class MergeDataset(Dataset):
         
         non_null_ids = corpus[check_null_df==False].index.tolist()
 
+        assert len(null_ids) + len(non_null_ids) == self.sequence_length, \
+            f"Found {len(null_ids)} + {len(non_null_ids)} vs {self.sequence_length}"
+
         corpus2encode = corpus.loc[non_null_ids].tolist()
 
         assert len(non_null_ids) == len(corpus2encode), f"Found {len(non_null_ids)} vs {len(corpus2encode)}"
@@ -161,7 +164,14 @@ class MergeDataset(Dataset):
             f"Found {non_null_event_embedding.shape[-1]}"
 
         total_embeddings = np.empty(shape= (self.sequence_length, self.embedding_dim), dtype= np.float32)
-        total_embeddings[null_ids] = null_event_embedding
-        total_embeddings[non_null_ids] = non_null_event_embedding
-        
+
+        try:
+            total_embeddings[null_ids] = null_event_embedding
+            total_embeddings[non_null_ids] = non_null_event_embedding
+
+        except IndexError as err:
+            print(err)
+            print(non_null_ids, ', length: ', len(non_null_ids))
+            print(non_null_event_embedding.shape)
+
         return price_vector, total_embeddings
