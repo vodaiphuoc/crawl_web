@@ -6,6 +6,11 @@ from typing import Literal, List, Dict, Union
 from datetime import datetime
 import re
 from tqdm import tqdm
+from collections import defaultdict
+from vnstock3 import Vnstock
+import os
+import pandas as pd
+from sentence_transformers import SentenceTransformer
 
 class NonmatchException(Exception):
     def __init__(self, message:str):
@@ -37,7 +42,7 @@ def pre_processing_page_data(page_data:str, url:str)->Dict[str, Union[int, str]]
     main_corpus = "\n".join(lines[title_idx+1:end_corpus_idx-4])
 
     # find news for ACB and other banks only
-    regex_result = re.findall(r"\bACB\b|\bNgân hàng\b|\bngân hàng\b", main_corpus)
+    regex_result = re.findall(r"\bACB\b|\bNgân hàng\b|\bngân hàng\b|\bgiá vàng\b|\bvàng\b", main_corpus)
 
     if len(set(regex_result)) > 0:
         return {
@@ -51,9 +56,95 @@ def pre_processing_page_data(page_data:str, url:str)->Dict[str, Union[int, str]]
         raise NonmatchException('main corpus does not have target kewwords')
 
 
+class PostProcessing(object):
+    def __init__(self):
+        total_data = []
+        for json_file in glob.glob('stage_4_data/page_data_*.json'):
+            with open(json_file,'r') as fp:
+                stage3_data = json.load(fp)
+                total_data.extend(stage3_data)
+
+
+        self.grouped_data = defaultdict(list)
+        for item in total_data:
+            date_tuple = (item['year'], item['month'], item['day'])
+            self.grouped_data[date_tuple].append({
+                'url': item['url'],
+                'corpus':item['corpus']
+            })
+
+        self.stock_values = self._post_processing_vnstock()
+
+        # convert merge corpus to embedding vetors
+        self.sentence_model = SentenceTransformer('dangvantuan/vietnamese-document-embedding', 
+                                    trust_remote_code=True).compile(fullgraph = True)
+
+
+    def _post_processing_vnstock(self)->pd.DataFrame:
+        acb_stocks = Vnstock().stock(symbol="ACB", source= "TCBS")
+        stock_values =  acb_stocks.quote.history(
+            start = "2022-01-01", 
+            end = str(datetime.now().date()),
+            interval = '1D'
+        )
+        stock_values = stock_values.sort_values(by = 'time')
+
+        stock_values['year'] = stock_values['time'].dt.year
+        stock_values['month'] = stock_values['time'].dt.month
+        stock_values['day'] = stock_values['time'].dt.day
+
+        print('length before: ', len(stock_values))
+        stock_values.drop_duplicates(inplace=True)
+        stock_values.reset_index(drop = True, inplace = True)
+        print('length after: ', len(stock_values))
+
+        stock_values['time'] = pd.to_datetime(stock_values['time'], format="%Y-%m-%d")
+        stock_values['time_diff'] = stock_values['time'].diff()
+        
+        stock_values.to_csv('temp.csv')
+
+        return stock_values
+
+
+    def _get_corpus(self, row):
+        r"""
+        Merge corpus and get embedding
+        """    
+        query_key = (row.year, row.month, row.day)
+        
+        try:
+            merge_corpus = "\n".join([
+                element['corpus'] 
+                for element in self.grouped_data[query_key]
+            ])
+
+            return {
+                'merge_corpus': merge_corpus
+            }
+        except IndexError as err:
+            return {
+                'corpus_list': []
+            }
+
+    def align(self):
+        r"""
+        Align corpus with time in price dataframe
+        """
+        self.stock_values['merge_corpus'] = self.stock_values.apply(
+            lambda x: self._get_corpus(x), 
+            axis = 1, 
+            result_type = "expand"
+        )
+        
+        embeddings = self.sentence_model.encode(self.stock_values['merge_corpus'].tolist())
+        self.stock_values['embeddings'] = embeddings
+
+        return self.stock_values
+
+
 def main()->None:
     for json_file in glob.glob('stage_3_data/*.json'):
-        file_name = json_file.split('/')[-1].replace('.json','')
+        file_name = json_file.split(os.sep)[-1].replace('.json','')
 
         total_data = []
         with open(json_file,'r') as fp:
@@ -70,6 +161,16 @@ def main()->None:
         
         with open(f'stage_4_data/{file_name}.json','w') as fp:
                 json.dump(total_data, fp, indent= 4)
+
+
+    # post processing
+    engine = PostProcessing()
+    result_data = engine.align()
+
+    print('result data length: ', len(result_data))
+
+    result_data.to_csv('total.csv')
+
 
 if __name__ == '__main__':
     main()

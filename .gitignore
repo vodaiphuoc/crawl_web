@@ -3,4 +3,3 @@ docs/
 *test.py
 *.zip
 __pycache__/
-stage_3_data/*.json
