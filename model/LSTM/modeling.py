@@ -171,16 +171,20 @@ class MergeDataset(Dataset):
 
         else:
             total_embeddings = np.empty(shape= (self.sequence_length, self.embedding_dim), dtype= np.float32)
-            null_event_embedding = np.zeros(shape = (len(null_ids),self.embedding_dim))
+            null_event_embedding = np.zeros(shape = (len(null_ids),self.embedding_dim), dtype= np.float32)
         
             non_null_event_embedding = self.sentence_model.encode(
                 corpus.loc[non_null_ids].tolist(), 
-                show_progress_bar= False, 
-                precision= 'float32', 
-                convert_to_tensor=True
+                show_progress_bar = False, 
+                precision = 'float32', 
+                convert_to_tensor = True
             ).cpu().numpy()
-        
-            total_embeddings[null_ids,:] = null_event_embedding
-            total_embeddings[non_null_ids,:] = non_null_event_embedding
+
+            try:
+                total_embeddings[null_ids,:] = null_event_embedding
+                total_embeddings[non_null_ids,:] = non_null_event_embedding
+            except IndexError as err:
+                print(total_embeddings.shape[0],len(null_ids), null_event_embedding.shape[0])
+                print(len(corpus))
 
             return price_vector, torch.from_numpy(total_embeddings)
