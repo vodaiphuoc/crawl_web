@@ -161,7 +161,7 @@ class PostProcessing(object):
 
         assert _final_embeddings_length == len(corpus_list), f"Found {_final_embeddings_length} vs {len(corpus_list)}"
 
-        self.stock_values['embeddings'] = self.stock_values.apply(lambda x: total_embeddings[x.index].tolist())
+        self.stock_values['embeddings'] = self.stock_values.apply(lambda x: total_embeddings[x.index,:].tolist())
 
         return self.stock_values
 
