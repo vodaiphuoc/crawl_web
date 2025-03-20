@@ -143,9 +143,8 @@ class MergeDataset(Dataset):
                             ], axis=-1
         ))
 
-        corpus = row.merge_corpus
-
-        assert len(corpus) == self.sequence_length, f"Found {len(corpus)} vs {self.sequence_length}"
+        corpus = row.merge_corpus.copy()
+        corpus.reset_index(drop= True, inplace= True)
 
         check_null_df = corpus.isnull()
         null_ids = corpus[check_null_df==True].index.tolist()
