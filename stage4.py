@@ -77,8 +77,8 @@ class PostProcessing(object):
 
         # convert merge corpus to embedding vetors
         self.sentence_model = SentenceTransformer('dangvantuan/vietnamese-document-embedding', 
-                                    trust_remote_code=True).compile(fullgraph = True)
-
+                                    trust_remote_code=True)
+        self.sentence_model.compile(fullgraph = True)
 
     def _post_processing_vnstock(self)->pd.DataFrame:
         acb_stocks = Vnstock().stock(symbol="ACB", source= "TCBS")
