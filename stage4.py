@@ -150,6 +150,7 @@ def main()->None:
                         url = page['url']
                     ))
                 except (IndexError, NonmatchException) as err:
+                    print(err)
                     continue
         
         with open(f'stage_4_data/{file_name}.json','w') as fp:
