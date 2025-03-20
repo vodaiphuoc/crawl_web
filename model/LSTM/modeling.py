@@ -106,6 +106,9 @@ class LSTMModel(nn.Module):
 
 
 class MergeDataset(Dataset):
+
+    _output_dtype = torch.float32
+
     def __init__(self, 
                  sequence_length:int, 
                  datadf: pd.DataFrame
@@ -130,48 +133,46 @@ class MergeDataset(Dataset):
         return len(self.df) - (self.sequence_length+1)
     
     def __getitem__(self, index:int):
-        row = self.df.loc[index: index + self.sequence_length,:]
+        row = self.df.loc[index: index + self.sequence_length - 1,:]
 
         price_vector = torch.from_numpy(np.concatenate([row.high, row.low, row.open, row.close], axis=-1))
 
         corpus = row.merge_corpus
 
         check_null_df = corpus.isnull()
-
         null_ids = corpus[check_null_df==True].index.tolist()
-        null_event_embedding = np.zeros(shape = (len(null_ids),self.embedding_dim))
-        
         non_null_ids = corpus[check_null_df==False].index.tolist()
 
-        assert len(null_ids) + len(non_null_ids) == self.sequence_length, \
-            f"Found {len(null_ids)} + {len(non_null_ids)} vs {self.sequence_length}"
-
-        corpus2encode = corpus.loc[non_null_ids].tolist()
-
-        assert len(non_null_ids) == len(corpus2encode), f"Found {len(non_null_ids)} vs {len(corpus2encode)}"
-
-        non_null_event_embedding = self.sentence_model.encode(
-                corpus2encode, 
+        if len(null_ids) == self.sequence_length: 
+            return (price_vector, 
+                    torch.zeros(
+                        size = (self.sequence_length,self.embedding_dim), 
+                        dtype= self._output_dtype
+                    )
+            )
+        
+        elif len(null_ids) == 0:
+            event_embedding = self.sentence_model.encode(
+                corpus.tolist(), 
                 show_progress_bar= False, 
                 precision= 'float32', 
                 convert_to_tensor=True
-        ).cpu().numpy()
+            ).cpu().numpy()
+
+            return price_vector, event_embedding
+
+        else:
+            total_embeddings = np.empty(shape= (self.sequence_length, self.embedding_dim), dtype= np.float32)
+            null_event_embedding = np.zeros(shape = (len(null_ids),self.embedding_dim))
         
-        assert len(non_null_ids) == non_null_event_embedding.shape[0], \
-            f"Found {len(non_null_ids)} vs {non_null_event_embedding.shape[0]}"
-
-        assert non_null_event_embedding.shape[-1] == self.embedding_dim, \
-            f"Found {non_null_event_embedding.shape[-1]}"
-
-        total_embeddings = np.empty(shape= (self.sequence_length, self.embedding_dim), dtype= np.float32)
-
-        try:
+            non_null_event_embedding = self.sentence_model.encode(
+                corpus.loc[non_null_ids].tolist(), 
+                show_progress_bar= False, 
+                precision= 'float32', 
+                convert_to_tensor=True
+            ).cpu().numpy()
+        
             total_embeddings[null_ids] = null_event_embedding
             total_embeddings[non_null_ids] = non_null_event_embedding
 
-        except IndexError as err:
-            print(err)
-            print(non_null_ids, ', length: ', len(non_null_ids))
-            print(non_null_event_embedding.shape)
-
-        return price_vector, total_embeddings
+            return price_vector, total_embeddings
