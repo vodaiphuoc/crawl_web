@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 from typing import List
 from torchmetrics.regression import MeanAbsolutePercentageError
 import torch
+import functools
+import time
 
 class Report(object):
     def __init__(self, target: List[float], predict: List[float], epoch:int):
@@ -22,3 +24,17 @@ class Report(object):
 
         fig.savefig('price_plot.png')
 
+
+def time_measure(func):
+    r"""
+    Decorator for measuring time
+    """
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        _start_time = time.time()
+        result = func(*args, **kwargs)
+        print(f'`{func.__name__}` function duration: ', time.time() - _start_time)
+        return result
+
+    return wrapper

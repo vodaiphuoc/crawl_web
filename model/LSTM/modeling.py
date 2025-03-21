@@ -1,11 +1,12 @@
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
-from typing import Union, Tuple
+from typing import Union, Tuple, List
 from sentence_transformers import SentenceTransformer
 import pandas as pd
 import numpy as np
 from pydantic.dataclasses import dataclass
+from .utils import time_measure
 
 class LSTMCellEventContext(nn.Module):
     r"""
@@ -186,6 +187,19 @@ class MergeDataset(Dataset):
     def __len__(self):
         return len(self.df) - (self.sequence_length+1)
     
+    @time_measure
+    def _get_embeddings(self, corpus: List[str])->torch.Tensor:
+        r"""
+        Batch inference
+        """
+        return self.sentence_model.encode(
+            corpus, 
+            show_progress_bar = False, 
+            precision = 'float32', 
+            convert_to_tensor = True
+        ).cpu()
+
+    @time_measure
     def __getitem__(self, index:int):
         row = self.df.loc[index: index + self.sequence_length - 1,:]
 
@@ -220,27 +234,21 @@ class MergeDataset(Dataset):
             )
         
         elif len(null_ids) == 0:
-            event_embedding = self.sentence_model.encode(
-                corpus.tolist(), 
-                show_progress_bar = False, 
-                precision = 'float32', 
-                convert_to_tensor = True
-            ).cpu()
-
-            return price_vector, event_embedding.to(self._output_dtype), target_price
+            event_embedding = self._get_embeddings(
+                corpus= corpus.tolist()
+            ).to(self._output_dtype)
+            
+            return price_vector, event_embedding, target_price
 
         else:
             total_embeddings = np.zeros(
                 shape = (self.sequence_length, self.embedding_dim), 
                 dtype = np.float32
             )
-        
-            non_null_event_embedding = self.sentence_model.encode(
-                corpus.loc[non_null_ids].tolist(), 
-                show_progress_bar = False, 
-                precision = 'float32', 
-                convert_to_tensor = True
-            ).cpu().numpy()
+
+            non_null_event_embedding = self._get_embeddings(
+                corpus = corpus.loc[non_null_ids].tolist()
+            ).numpy()
 
             total_embeddings[non_null_ids,:] = non_null_event_embedding
             
