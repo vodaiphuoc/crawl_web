@@ -5,6 +5,7 @@ from typing import Union, Tuple
 from sentence_transformers import SentenceTransformer
 import pandas as pd
 import numpy as np
+from dataclasses import dataclass, field
 
 class LSTMCellEventContext(nn.Module):
     r"""
@@ -109,7 +110,24 @@ class LSTMModel(nn.Module):
         predicted_price = self.fc(next_hx)
         return predicted_price
 
+@dataclass
+class Min_Max:
+    min: float
+    max: float
 
+@dataclass
+class Price_Min_Max:
+    high: Min_Max
+    low: Min_Max
+    open: Min_Max
+    close: Min_Max
+    
+    def re_scale_close(self, scaled_value: np.ndarray)->np.ndarray:
+        r"""
+        Re-scale close price to original scale.
+        This function apply for batch input
+        """
+        return scaled_value*(self.close.max - self.close.min)+self.close.min
 
 class MergeDataset(Dataset):
 
@@ -117,13 +135,39 @@ class MergeDataset(Dataset):
 
     def __init__(self, 
                  sequence_length:int, 
-                 datadf: pd.DataFrame
+                 datadf: pd.DataFrame,
+                 scale_by_other:bool = False,
+                 other_price_stats: Price_Min_Max = None
         )->None:
         super().__init__()
         self.sequence_length = sequence_length
         
         self.df = datadf
-    
+
+        if not scale_by_other:
+            _stats_dict = self.df.describe().loc[['max','min'],['high','low','open','close']].to_dict()
+            self._price_stats = Price_Min_Max(**_stats_dict)
+        else:
+            assert other_price_stats is not None
+            self._price_stats = other_price_stats
+
+        # apply min max scaling
+        self.df.high = self.df.close.apply(lambda x: 
+            (x - self._price_stats.high.min)/(self._price_stats.high.max - self._price_stats.high.min)
+        )
+
+        self.df.low = self.df.close.apply(lambda x: 
+            (x - self._price_stats.low.min)/(self._price_stats.low.max - self._price_stats.low.min)
+        )
+
+        self.df.open = self.df.close.apply(lambda x:
+            (x - self._price_stats.open.min)/(self._price_stats.open.max - self._price_stats.open.min)
+        )
+
+        self.df.close = self.df.close.apply(lambda x:
+            (x - self._price_stats.close.min)/(self._price_stats.close.max - self._price_stats.close.min)
+        )
+
         # convert merge corpus to embedding vetors
         self.sentence_model = SentenceTransformer(
             'dangvantuan/vietnamese-document-embedding',
@@ -135,6 +179,10 @@ class MergeDataset(Dataset):
 
         self.sentence_model.compile(fullgraph = True)
 
+    @property
+    def price_stats(self)->Price_Min_Max:
+        return self.self._price_stats
+    
     def __len__(self):
         return len(self.df) - (self.sequence_length+1)
     
