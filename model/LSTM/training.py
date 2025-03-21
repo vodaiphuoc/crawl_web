@@ -11,7 +11,8 @@ def train(config = TrainingConfig()):
 
     total_df = pd.read_csv(config.csv_path)
 
-    model = LSTMModel().to(device)
+    model = LSTMModel().to(torch.float32).to(device)
+
     dataset = MergeDataset(sequence_length = config.sequence_length, datadf = total_df)
     loader = torch.utils.data.DataLoader(
         dataset = dataset, 

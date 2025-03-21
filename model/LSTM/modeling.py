@@ -136,7 +136,8 @@ class MergeDataset(Dataset):
         row = self.df.loc[index: index + self.sequence_length - 1,:]
 
         target_price = torch.tensor(
-            self.df.loc[index + self.sequence_length,:].close
+            self.df.loc[index + self.sequence_length,:].close, 
+            dtype= self._output_dtype
         )
 
         price_vector = torch.from_numpy(
@@ -145,7 +146,7 @@ class MergeDataset(Dataset):
                             row.open.to_numpy().reshape(-1,1), 
                             row.close.to_numpy().reshape(-1,1)
                             ], axis=-1
-        ))
+        )).to(self._output_dtype)
 
         corpus = row.merge_corpus.copy()
         corpus.reset_index(drop= True, inplace= True)
@@ -170,9 +171,9 @@ class MergeDataset(Dataset):
                 show_progress_bar = False, 
                 precision = 'float32', 
                 convert_to_tensor = True
-            ).cpu().numpy()
+            ).cpu()
 
-            return price_vector, event_embedding, target_price
+            return price_vector, event_embedding.to(self._output_dtype), target_price
 
         else:
             total_embeddings = np.zeros(
