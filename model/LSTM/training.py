@@ -73,6 +73,8 @@ def train(config = TrainingConfig()):
                 batch_event = event_embeddings
             )
 
+            price_outputs = torch.squeeze(price_outputs, dim= -1)
+
             loss = criterion(price_outputs, target_price)
             loss.backward()
             optimizer.step()
