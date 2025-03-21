@@ -95,7 +95,11 @@ class LSTMModel(nn.Module):
             next_hx, next_cx = _lstm_cell(batch_price = batch_price[:,_ith,:], 
                 batch_event = batch_event[:,_ith,:],
                 init_hidden_state = None if _ith == 0 else next_hx,
-                init_cell_state = torch.zeros(size = (batch_size, self.cell_hidden_dim)) if _ith == 0 else next_cx
+                init_cell_state = torch.zeros(
+                    size = (batch_size, self.cell_hidden_dim), 
+                    dtype= batch_price.dtype, 
+                    device= batch_price.device
+                    ) if _ith == 0 else next_cx
             )
 
 
