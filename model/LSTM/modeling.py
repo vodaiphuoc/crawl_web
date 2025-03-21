@@ -181,7 +181,7 @@ class MergeDataset(Dataset):
 
     @property
     def price_stats(self)->Price_Min_Max:
-        return self.self._price_stats
+        return self._price_stats
     
     def __len__(self):
         return len(self.df) - (self.sequence_length+1)
