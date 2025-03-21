@@ -76,7 +76,7 @@ def train(config = TrainingConfig()):
             optimizer.step()
             print(f'Epoch [{epoch+1}/{epochs}], train loss: {loss.item():.4f}')
 
-        if epoch % 10 == 0:
+        if epoch % 10 == 0 or epoch == epochs - 1:
             total_val_target_price = []
             total_val_predict_price = []
             model.eval()
