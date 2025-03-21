@@ -17,10 +17,12 @@ def train(config = TrainingConfig()):
     # train test split
     test_length = int(len(total_df)*config.test_ratio)
     
-    train_df = total_df.iloc[:len(total_df) - test_length,:]
+    train_df = total_df.iloc[:(len(total_df) - test_length),:]
     train_df.reset_index(drop= True, inplace=True)
     test_df = total_df.iloc[(len(total_df) - test_length):,:]
     test_df.reset_index(drop= True, inplace=True)
+    
+
     model = LSTMModel().to(torch.float32).to(device)
 
     train_dataset = MergeDataset(

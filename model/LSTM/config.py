@@ -23,4 +23,4 @@ class TrainingConfig:
     learning_rate: float = field(default= 0.001)
     epochs: float = field(default = 2, metadata= "Number of epochs for training")
 
-    test_ratio: float = field(default= 40)
+    test_ratio: float = field(default= 0.4)
