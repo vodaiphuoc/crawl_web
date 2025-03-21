@@ -135,7 +135,7 @@ class MergeDataset(Dataset):
     def __getitem__(self, index:int):
         row = self.df.loc[index: index + self.sequence_length - 1,:]
 
-        target_price = torch.from_numpy(
+        target_price = torch.tensor(
             self.df.loc[index + self.sequence_length,:].close
         )
 
