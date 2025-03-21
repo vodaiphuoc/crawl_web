@@ -58,7 +58,7 @@ def train(config = TrainingConfig()):
     
     # Training loop
     epochs = config.epochs
-    for epoch in range(epochs):
+    for epoch in range(1,epochs+1):
         model.train()
         for prices, event_embeddings, target_price in train_loader:
             
@@ -93,6 +93,8 @@ def train(config = TrainingConfig()):
                         batch_price = prices, 
                         batch_event = event_embeddings
                     )
+
+                    price_outputs = torch.squeeze(price_outputs, dim= -1)
 
                     loss = criterion(price_outputs, target_price)
                     print(f'Epoch [{epoch+1}/{epochs}], val loss: {loss.item():.4f}')
