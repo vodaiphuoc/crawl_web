@@ -89,7 +89,7 @@ class LSTMModel(nn.Module):
             batch_event (torch.Tensor): event embedding vector 
                 shape (batch, sequence_length , cell_hidden_dim)
         """
-        batch_size = batch_price.size(1)
+        batch_size = batch_price.size(0)
         
         for _ith, _lstm_cell in enumerate(self.lstm_cell_list):
             next_hx, next_cx = _lstm_cell(batch_price = batch_price[:,_ith,:], 
