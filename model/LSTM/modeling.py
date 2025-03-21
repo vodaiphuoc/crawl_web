@@ -5,7 +5,7 @@ from typing import Union, Tuple
 from sentence_transformers import SentenceTransformer
 import pandas as pd
 import numpy as np
-from dataclasses import dataclass, field
+from pydantic.dataclasses import dataclass
 
 class LSTMCellEventContext(nn.Module):
     r"""
