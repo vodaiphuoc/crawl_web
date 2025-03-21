@@ -1,6 +1,7 @@
 import torch.optim as optim
 import torch.nn as nn
 import torch
+from tqdm import tqdm
 import pandas as pd
 from .modeling import LSTMModel, MergeDataset
 from .config import TrainingConfig
@@ -10,9 +11,6 @@ def train(config = TrainingConfig()):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     total_df = pd.read_csv(config.csv_path)
-    
-    # for exp only
-    total_df = total_df.head(100)
 
     # train test split
     test_length = int(len(total_df)*config.test_ratio)
@@ -21,7 +19,6 @@ def train(config = TrainingConfig()):
     train_df.reset_index(drop= True, inplace=True)
     test_df = total_df.iloc[(len(total_df) - test_length):,:]
     test_df.reset_index(drop= True, inplace=True)
-    
 
     model = LSTMModel().to(torch.float32).to(device)
 
@@ -41,7 +38,7 @@ def train(config = TrainingConfig()):
 
     train_loader = torch.utils.data.DataLoader(
         dataset = train_dataset, 
-        batch_size = config.batch_size, 
+        batch_size = config.batch_size,
         shuffle= True
     )
 
@@ -58,9 +55,9 @@ def train(config = TrainingConfig()):
     
     # Training loop
     epochs = config.epochs
-    for epoch in range(1,epochs+1):
+    for epoch in range(epochs):
         model.train()
-        for prices, event_embeddings, target_price in train_loader:
+        for prices, event_embeddings, target_price in tqdm(train_loader, total= len(train_dataset)):
             
             optimizer.zero_grad()
 
