@@ -48,7 +48,7 @@ class LSTMCellEventContext(nn.Module):
         if init_hidden_state is None:
             hx = batch_event
         else:
-            hx = torch.sum(batch_event + init_hidden_state,keepdim= True)
+            hx = torch.add(batch_event + init_hidden_state)
         
         assert hx.shape[0] == batch_event.shape[0], f"found {hx.shape[0]} vs {batch_event.shape[0]}"
         assert hx.shape[1] == batch_event.shape[1], f"found {hx.shape[1]} vs {batch_event.shape[1]}"
