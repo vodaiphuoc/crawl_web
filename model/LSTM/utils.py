@@ -18,7 +18,7 @@ class Report(object):
         ax.plot(list(range(len(target))),target, color = 'green', marker = 'o', label = 'target price')
         ax.plot(list(range(len(target))),predict, color = 'red', marker = '+', label = 'predict price')
         ax.set_title(label= f"Price plot with MAPE: {metric_value} at epoch: {epoch}")
-        legend = ax.legend(loc='upper', shadow=True, fontsize='x-large')
+        legend = ax.legend(loc='upper right', shadow=True, fontsize='x-large')
 
         fig.savefig('price_plot.png')
 
