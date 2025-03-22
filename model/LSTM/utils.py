@@ -7,6 +7,7 @@ import time
 import logging
 
 # Configure basic logging to a file
+logger = logging.getLogger(__name__)
 logging.basicConfig(filename='time_measure.log', level=logging.INFO)
 
 
@@ -52,7 +53,7 @@ def time_measure(func):
         else:
             result = query_result
 
-        logging.info("duration: {0}, \n msg: {1}".format(time.time() - _start_time, str(msg)))
+        logger.info("duration: {0}, \n msg: {1}".format(time.time() - _start_time, str(msg)))
         return result
 
     return wrapper
