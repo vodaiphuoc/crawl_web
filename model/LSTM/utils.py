@@ -14,7 +14,7 @@ class Report(object):
         self._make_plot(target = target, predict= predict, metric_value= value.item(), epoch= epoch)
 
     def _make_plot(self, target: List[float], predict: List[float], metric_value: float, epoch: int):
-        fig = plt.figure(figsize = (4,8))
+        fig = plt.figure(figsize = (8,4))
         ax = fig.add_subplot()
 
         ax.plot(list(range(len(target))),target, color = 'green', marker = 'o', label = 'target price')
