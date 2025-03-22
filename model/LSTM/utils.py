@@ -4,6 +4,11 @@ from torchmetrics.regression import MeanAbsolutePercentageError
 import torch
 import functools
 import time
+import logging
+
+# Configure basic logging to a file
+logging.basicConfig(filename='time_measure.log', level=logging.INFO)
+
 
 class Report(object):
     def __init__(self, target: List[float], predict: List[float], epoch:int):
@@ -13,7 +18,12 @@ class Report(object):
 
         self._make_plot(target = target, predict= predict, metric_value= value.item(), epoch= epoch)
 
-    def _make_plot(self, target: List[float], predict: List[float], metric_value: float, epoch: int):
+    def _make_plot(self, 
+                   target: List[float], 
+                   predict: List[float], 
+                   metric_value: float, 
+                   epoch: int
+        )->None:
         fig = plt.figure(figsize = (8,4))
         ax = fig.add_subplot()
 
@@ -22,7 +32,7 @@ class Report(object):
         ax.set_title(label= f"Price plot with MAPE: {metric_value} at epoch: {epoch}")
         legend = ax.legend(loc='upper right', shadow=True, fontsize='x-large')
 
-        fig.savefig('price_plot.png')
+        fig.savefig(f'price_plot_{epoch}.png')
 
 
 def time_measure(func):
@@ -34,6 +44,7 @@ def time_measure(func):
         _start_time = time.time()
         _dataset, _index = args[0], args[1]
         query_result = _dataset.get_cache(_index)
+        
         msg = f"arg: {args}, kwargs: {kwargs}, query_result: {query_result}"
         if query_result is None:
             result = func(*args, **kwargs)
@@ -41,7 +52,7 @@ def time_measure(func):
         else:
             result = query_result
 
-        print(f'`{func.__name__}` function duration: ', time.time() - _start_time, f'\n msg: {msg}')
+        logging.info(f'`{func.__name__}` function duration: ', time.time() - _start_time, f'\n msg: {msg}')
         return result
 
     return wrapper
