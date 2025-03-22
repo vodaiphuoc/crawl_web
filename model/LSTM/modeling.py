@@ -130,7 +130,19 @@ class Price_Min_Max:
         """
         return scaled_value*(self.close.max - self.close.min)+self.close.min
 
-class MergeDataset(Dataset):
+
+class Cache(object):
+    def __init__(self):
+        print('ini cache')
+        self._storage = {}
+    
+    def __setitem__(self, index:int, value:Tuple[torch.Tensor]):
+        self._storage[index] = value
+
+    def get_cache(self, index:int):
+        return self._storage.get(index, None)
+
+class MergeDataset(Dataset, Cache):
 
     _output_dtype = torch.float32
 
@@ -140,9 +152,10 @@ class MergeDataset(Dataset):
                  scale_by_other:bool = False,
                  other_price_stats: Price_Min_Max = None
         )->None:
-        super().__init__()
+        Cache.__init__(self)
+
         self.sequence_length = sequence_length
-        
+
         self.df = datadf
 
         if not scale_by_other:
@@ -153,7 +166,7 @@ class MergeDataset(Dataset):
             self._price_stats = other_price_stats
 
         # apply min max scaling
-        self.df.high = self.df.close.apply(lambda x: 
+        self.df.high = self.df.close.apply(lambda x: \
             (x - self._price_stats.high.min)/(self._price_stats.high.max - self._price_stats.high.min)
         )
 
@@ -173,12 +186,13 @@ class MergeDataset(Dataset):
         self.sentence_model = SentenceTransformer(
             'dangvantuan/vietnamese-document-embedding',
             cache_folder= ".checkpoint",
-            trust_remote_code=True
+            trust_remote_code=True,
+            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         )
 
         self.embedding_dim = self.sentence_model.get_sentence_embedding_dimension()
 
-        self.sentence_model.compile(fullgraph = True)
+        self.sentence_model.compile(fullgraph = True, mode = "reduce-overhead")
 
     @property
     def price_stats(self)->Price_Min_Max:
@@ -187,20 +201,21 @@ class MergeDataset(Dataset):
     def __len__(self):
         return len(self.df) - (self.sequence_length+1)
     
-    @time_measure
     def _get_embeddings(self, corpus: List[str])->torch.Tensor:
         r"""
         Batch inference
+        Args:
+            corpus (List[str]): a select of corpus by `local` non null index
         """
         return self.sentence_model.encode(
-            corpus, 
+            corpus,
             show_progress_bar = False, 
             precision = 'float32', 
             convert_to_tensor = True
         ).cpu()
 
     @time_measure
-    def __getitem__(self, index:int):
+    def __getitem__(self, index:int)->Tuple[torch.Tensor]:
         row = self.df.loc[index: index + self.sequence_length - 1,:]
 
         target_price = torch.tensor(
@@ -220,6 +235,8 @@ class MergeDataset(Dataset):
         corpus.reset_index(drop= True, inplace= True)
 
         check_null_df = corpus.isnull()
+
+        # these are `local` index
         null_ids = corpus[check_null_df==True].index.tolist()
         non_null_ids = corpus[check_null_df==False].index.tolist()
 

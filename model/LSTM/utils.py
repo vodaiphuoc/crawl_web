@@ -27,13 +27,20 @@ class Report(object):
 
 def time_measure(func):
     r"""
-    Decorator for measuring time
+    Decorator for measuring time and modify storage
     """
-
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         _start_time = time.time()
-        result = func(*args, **kwargs)
+        _dataset, _index = args[0], args[1]
+        query_result = _dataset.get_cache(_index)
+        
+        if query_result is None:
+            result = func(*args, **kwargs)
+            _dataset[_index] = result
+        else:
+            result = query_result
+
         print(f'`{func.__name__}` function duration: ', time.time() - _start_time)
         return result
 
