@@ -45,14 +45,14 @@ def time_measure(func):
         _dataset, _index = args[0], args[1]
         query_result = _dataset.get_cache(_index)
         
-        msg = f"arg: {args}, kwargs: {kwargs}, index: {_index}, query_result: {query_result is None}"
+        msg = f"index: {_index}, query_result: {query_result is None}"
         if query_result is None:
             result = func(*args, **kwargs)
             _dataset[_index] = result
         else:
             result = query_result
 
-        logging.info(f'`{func.__name__}` function duration: ', time.time() - _start_time, f'\n msg: {msg}')
+        logging.info(f'`{func.__name__}` function duration: ', time.time() - _start_time, f'\n msg: {str(msg)}')
         return result
 
     return wrapper
