@@ -254,7 +254,7 @@ class MergeDataset(Dataset, Cache):
             event_embedding = self._get_embeddings(
                 corpus= corpus.tolist()
             ).to(self._output_dtype)
-            
+            print('event_embedding: ',event_embedding.device)
             return price_vector, event_embedding, target_price
 
         else:
