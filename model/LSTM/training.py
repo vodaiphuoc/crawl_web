@@ -12,7 +12,7 @@ def train(config = TrainingConfig()):
 
     total_df = pd.read_csv(config.csv_path)
 
-    total_df = total_df.head(120)
+    total_df = total_df.head(100)
 
     # train test split
     test_length = int(len(total_df)*config.test_ratio)
@@ -41,13 +41,15 @@ def train(config = TrainingConfig()):
     train_loader = torch.utils.data.DataLoader(
         dataset = train_dataset, 
         batch_size = config.batch_size,
-        shuffle= True
+        shuffle= True,
+        drop_last= True
     )
 
     test_loader = torch.utils.data.DataLoader(
         dataset = test_dataset, 
         batch_size = config.batch_size, 
-        shuffle= False
+        shuffle= False,
+        drop_last= False
     )
 
     # Define loss function and optimizer
