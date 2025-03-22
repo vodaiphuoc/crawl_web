@@ -38,6 +38,9 @@ def train(config = TrainingConfig()):
         other_price_stats= train_dataset.price_stats
     )
 
+    print('train length: ', len(train_dataset))
+    print('test length: ', len(test_dataset))
+
     train_loader = torch.utils.data.DataLoader(
         dataset = train_dataset, 
         batch_size = config.batch_size,
@@ -63,7 +66,7 @@ def train(config = TrainingConfig()):
         model.train()
 
         mean_train_loss = 0.0
-        for prices, event_embeddings, target_price in tqdm(train_loader, total= len(train_dataset)):
+        for prices, event_embeddings, target_price in tqdm(train_loader, total= len(train_loader)):
             
             optimizer.zero_grad()
 
@@ -84,7 +87,7 @@ def train(config = TrainingConfig()):
 
             mean_train_loss += loss.item()
         
-        print(f'Epoch [{epoch+1}/{epochs}], train loss: {mean_train_loss/len(train_dataset)}')
+        print(f'Epoch [{epoch+1}/{epochs}], train loss: {mean_train_loss/len(train_loader)}')
 
         if epoch % 10 == 0 or epoch == epochs - 1:
             total_val_target_price = []
@@ -109,8 +112,6 @@ def train(config = TrainingConfig()):
                     loss = criterion(price_outputs, target_price)
                     mean_val_loss += loss.item()
 
-                    
-
 
                     # collector
                     rescaled_target = train_dataset.price_stats.re_scale_close(
@@ -122,7 +123,7 @@ def train(config = TrainingConfig()):
                     total_val_target_price.extend(rescaled_target)
                     total_val_predict_price.extend(rescaled_predict)
             
-            print(f'Epoch [{epoch+1}/{epochs}], val loss: {mean_val_loss/len(test_dataset)}')
+            print(f'Epoch [{epoch+1}/{epochs}], val loss: {mean_val_loss/len(test_loader)}')
             Report(target= total_val_target_price, predict= total_val_predict_price, epoch = epoch)
 
     torch.save(model.state_dict(), "model.pt")
