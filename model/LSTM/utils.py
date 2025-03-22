@@ -52,7 +52,7 @@ def time_measure(func):
         else:
             result = query_result
 
-        logging.info(f'`duration: ', time.time() - _start_time, f'\n msg: {str(msg)}')
+        logging.info("duration: {0}, \n msg: {1}".format(time.time() - _start_time, str(msg)))
         return result
 
     return wrapper
