@@ -28,7 +28,7 @@ class LSTMCellEventContext(nn.Module):
         self.lstm_cell = nn.LSTMCell(input_price_dim, cell_hidden_dim, bias= True)
 
     def forward(self, 
-                batch_price: torch.Tensor, 
+                batch_price: torch.Tensor,
                 batch_event: torch.Tensor,
                 init_hidden_state: Union[torch.Tensor, None],
                 init_cell_state: torch.Tensor
@@ -50,10 +50,8 @@ class LSTMCellEventContext(nn.Module):
         if init_hidden_state is None:
             hx = batch_event
         else:
-            hx = torch.add(batch_event,init_hidden_state)
+            hx = torch.add(batch_event,init_hidden_state, alpha= 0.5)
         
-        assert hx.shape[0] == batch_event.shape[0], f"found {hx.shape[0]} vs {batch_event.shape[0]}"
-        assert hx.shape[1] == batch_event.shape[1], f"found {hx.shape[1]} vs {batch_event.shape[1]}"
         return self.lstm_cell(batch_price, (hx, init_cell_state))
 
 
@@ -65,6 +63,7 @@ class LSTMModel(nn.Module):
     def __init__(self, 
                  input_price_dim:int = 4, 
                  cell_hidden_dim:int = 768,
+                 last_cfl_hidden_dim:int = 256,
                  sequence_length: int = 20,
                  final_output_dim: int = 1
         )->None:
@@ -78,8 +77,8 @@ class LSTMModel(nn.Module):
             for _ in range(sequence_length)
         ])
 
-
-        self.fc = nn.Linear(cell_hidden_dim, final_output_dim)
+        self.fc1 = nn.Linear(cell_hidden_dim, last_cfl_hidden_dim)
+        self.fc2 = nn.Linear(last_cfl_hidden_dim, final_output_dim)
 
     def forward(self, 
                 batch_price: torch.Tensor, 
@@ -108,7 +107,7 @@ class LSTMModel(nn.Module):
 
 
         # We are interested in the output at the last time step for prediction
-        predicted_price = self.fc(next_hx)
+        predicted_price = self.fc2(self.fc1(next_hx))
         return predicted_price
 
 @dataclass

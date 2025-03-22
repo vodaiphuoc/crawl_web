@@ -1,26 +1,26 @@
-from dataclasses import dataclass, field
+from pydantic import Field, computed_field, BaseModel
 import os
 
 
+class ModelConfig(BaseModel):
+    input_price_dim: int =  4
+    cell_hidden_dim: int =  768
+    last_cfl_hidden_dim: int =  256
+    sequence_length: int =  20
+    final_output_dim: int =  1
 
-@dataclass
-class ModelConfig:
-    input_price_dim: int = field(default= 4, metadata = "price dimension includes (High, Low, Open, Close)"), 
-    cell_hidden_dim: int = field(default= 768, metadata= "hidden dimension for each LSTM cell"),
-    sequence_length: int = field(default= 20, metadata= "sequence length of input data"),
-    final_output_dim: int = field(default= 1, metadata= "ouput model dimension")
-
-@dataclass
-class TrainingConfig:
-    csv_path:str = field(default = __file__.replace(
+class TrainingConfig(BaseModel):
+    csv_path:str = Field(default = __file__.replace(
             os.path.join("model","LSTM","config.py"), 
             os.path.join("stage_4_data","total.csv")
     ))
-    sequence_length: int = field(default= 20, metadata= "sequence length of input data")
-    model: ModelConfig = field(default= ModelConfig(sequence_length= sequence_length), metadata= "Model config params")
+    sequence_length: int =  20
+    batch_size:int = 32
+    learning_rate: float =  0.001
+    epochs: float = 100
+    test_ratio: float = 0.4
 
-    batch_size:int = field(default = 16)
-    learning_rate: float = field(default= 0.001)
-    epochs: float = field(default = 5, metadata= "Number of epochs for training")
-
-    test_ratio: float = field(default= 0.4)
+    @computed_field
+    @property
+    def model(self)->ModelConfig:
+        return ModelConfig(sequence_length = self.sequence_length)

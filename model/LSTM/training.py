@@ -12,8 +12,6 @@ def train(config = TrainingConfig()):
 
     total_df = pd.read_csv(config.csv_path)
 
-    total_df = total_df.head(100)
-
     # train test split
     test_length = int(len(total_df)*config.test_ratio)
     
@@ -21,8 +19,8 @@ def train(config = TrainingConfig()):
     train_df.reset_index(drop= True, inplace=True)
     test_df = total_df.iloc[(len(total_df) - test_length):,:]
     test_df.reset_index(drop= True, inplace=True)
-
-    model = LSTMModel().to(torch.float32).to(device)
+    
+    model = LSTMModel(**config.model.model_dump()).to(torch.float32).to(device)
 
     train_dataset = MergeDataset(
         sequence_length = config.sequence_length, 
