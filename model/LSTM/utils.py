@@ -8,7 +8,7 @@ import logging
 
 # Configure basic logging to a file
 logger = logging.getLogger(__name__)
-logging.basicConfig(filename='time_measure.log', level=logging.INFO)
+logging.basicConfig(filename=f'{__file__}_time_measure.log', level=logging.INFO)
 
 
 class Report(object):
