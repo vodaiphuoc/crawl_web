@@ -21,6 +21,6 @@ class TrainingConfig:
 
     batch_size:int = field(default = 16)
     learning_rate: float = field(default= 0.001)
-    epochs: float = field(default = 1, metadata= "Number of epochs for training")
+    epochs: float = field(default = 5, metadata= "Number of epochs for training")
 
     test_ratio: float = field(default= 0.4)

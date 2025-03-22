@@ -4,12 +4,6 @@ from torchmetrics.regression import MeanAbsolutePercentageError
 import torch
 import functools
 import time
-import logging
-
-# Configure basic logging to a file
-logger = logging.getLogger(__name__)
-logging.basicConfig(filename=f'{__file__}_time_measure.log', level=logging.INFO)
-
 
 class Report(object):
     def __init__(self, target: List[float], predict: List[float], epoch:int):
@@ -53,7 +47,7 @@ def time_measure(func):
         else:
             result = query_result
 
-        logger.info("duration: {0}, \n msg: {1}".format(time.time() - _start_time, str(msg)))
+        print("duration: {0}, \n msg: {1}".format(time.time() - _start_time, str(msg)))
         return result
 
     return wrapper
