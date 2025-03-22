@@ -32,7 +32,7 @@ class Report(object):
         ax.set_title(label= f"Price plot with MAPE: {metric_value} at epoch: {epoch}")
         legend = ax.legend(loc='upper right', shadow=True, fontsize='x-large')
 
-        fig.savefig(f'price_plot_{epoch}.png')
+        fig.savefig(f'training_plots/price_plot_{epoch}.png')
 
 
 def time_measure(func):
@@ -45,7 +45,7 @@ def time_measure(func):
         _dataset, _index = args[0], args[1]
         query_result = _dataset.get_cache(_index)
         
-        msg = f"arg: {args}, kwargs: {kwargs}, query_result: {query_result}"
+        msg = f"arg: {args}, kwargs: {kwargs}, index: {_index}, query_result: {query_result is None}"
         if query_result is None:
             result = func(*args, **kwargs)
             _dataset[_index] = result
