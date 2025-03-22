@@ -41,7 +41,7 @@ def time_measure(func):
         else:
             result = query_result
 
-        print(f'`{func.__name__}` function duration: ', time.time() - _start_time)
+        print(f'`{func.__name__}` function duration: ', time.time() - _start_time, f'\n msg: {msg}')
         return result
 
     return wrapper
