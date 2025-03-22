@@ -12,6 +12,8 @@ def train(config = TrainingConfig()):
 
     total_df = pd.read_csv(config.csv_path)
 
+    total_df = total_df.head(120)
+
     # train test split
     test_length = int(len(total_df)*config.test_ratio)
     
