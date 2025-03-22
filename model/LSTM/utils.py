@@ -34,7 +34,7 @@ def time_measure(func):
         _start_time = time.time()
         _dataset, _index = args[0], args[1]
         query_result = _dataset.get_cache(_index)
-        
+        msg = f"arg: {args}, kwargs: {kwargs}, query_result: {query_result}"
         if query_result is None:
             result = func(*args, **kwargs)
             _dataset[_index] = result

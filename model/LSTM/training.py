@@ -11,7 +11,7 @@ def train(config = TrainingConfig()):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     total_df = pd.read_csv(config.csv_path)
-    total_df = total_df.head(50)
+    total_df = total_df.head(100)
 
     # train test split
     test_length = int(len(total_df)*config.test_ratio)
